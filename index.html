@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alex Chen — Process Engineer | Battery Recycling Simulation</title>
+  <meta name="description" content="Portfolio: Hydrometallurgical Recycling Process Simulation for Waste Batteries — Aspen Plus, AutoCAD PFD, Equipment Design." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy:    '#0F1923',
+            slate:   '#1A2E3B',
+            'slate-mid': '#243444',
+            teal:    '#00897B',
+            'teal-light': '#4DB6AC',
+            ocean:   '#4FC3F7',
+            mint:    '#E8F5E9',
+            'cool-gray': '#B0BEC5',
+            'cool-gray-dim': '#78909C',
+          },
+          fontFamily: {
+            display: ['"Space Grotesk"', 'sans-serif'],
+            body:    ['Inter', 'sans-serif'],
+            mono:    ['"JetBrains Mono"', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ── Base ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { font-family: 'Inter', sans-serif; background: #0F1923; color: #E8F5E9; }
+
+    /* ── Scrollbar ─────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0F1923; }
+    ::-webkit-scrollbar-thumb { background: #00897B; border-radius: 3px; }
+
+    /* ── Nav ──────────────────────────────────────────────── */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(15, 25, 35, 0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(79, 195, 247, 0.08);
+      transition: background 0.3s;
+    }
+    .nav-link {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.8rem; font-weight: 500; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #B0BEC5;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: #4FC3F7; }
+
+    /* ── Hero ──────────────────────────────────────────────── */
+    #hero {
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse 70% 60% at 60% 40%, rgba(0,137,123,0.13) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 20% 80%, rgba(79,195,247,0.08) 0%, transparent 65%),
+        #0F1923;
+      position: relative; overflow: hidden;
+    }
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: #4DB6AC;
+    }
+    .hero-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 700; line-height: 1.04;
+      background: linear-gradient(135deg, #E8F5E9 0%, #4FC3F7 55%, #4DB6AC 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1rem, 2.5vw, 1.35rem);
+      font-weight: 400; color: #B0BEC5;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: linear-gradient(135deg, #00897B, #4FC3F7);
+      color: #0F1923; font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600; font-size: 0.85rem; letter-spacing: 0.06em;
+      padding: 0.75rem 1.75rem; border-radius: 6px;
+      transition: opacity 0.2s, transform 0.2s; text-decoration: none;
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      border: 1.5px solid rgba(79,195,247,0.45); color: #4FC3F7;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      font-size: 0.85rem; letter-spacing: 0.06em;
+      padding: 0.73rem 1.75rem; border-radius: 6px;
+      transition: background 0.2s, transform 0.2s; text-decoration: none;
+    }
+    .btn-outline:hover { background: rgba(79,195,247,0.08); transform: translateY(-1px); }
+
+    /* ── Animated process flow SVG ──────────────────────────── */
+    #process-flow-bg { position: absolute; right: -2%; bottom: 0; width: 52%; opacity: 0.22; pointer-events: none; }
+    @keyframes dash { to { stroke-dashoffset: 0; } }
+    .flow-path {
+      fill: none; stroke-width: 1.5;
+      stroke-dasharray: 800; stroke-dashoffset: 800;
+      animation: dash 4s ease forwards;
+    }
+    .fp1 { stroke: #4FC3F7; animation-delay: 0.3s; }
+    .fp2 { stroke: #4DB6AC; animation-delay: 0.9s; }
+    .fp3 { stroke: #00897B; animation-delay: 1.5s; }
+    @keyframes fadein-node { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
+    .flow-node { animation: fadein-node 0.5s ease forwards; opacity: 0; transform-origin: center; }
+    .fn1 { animation-delay: 0.6s; }
+    .fn2 { animation-delay: 1.2s; }
+    .fn3 { animation-delay: 1.8s; }
+    .fn4 { animation-delay: 2.4s; }
+
+    /* ── Section Shared ─────────────────────────────────────── */
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: #4DB6AC;
+    }
+    .section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 700; color: #E8F5E9; line-height: 1.15;
+    }
+    .card {
+      background: #1A2E3B; border: 1px solid rgba(79,195,247,0.1);
+      border-radius: 12px;
+    }
+    .card:hover { border-color: rgba(79,195,247,0.25); transition: border-color 0.25s; }
+
+    /* ── KPI Dashboard ──────────────────────────────────────── */
+    .kpi-card {
+      background: linear-gradient(135deg, #1A2E3B 0%, #243444 100%);
+      border: 1px solid rgba(0,137,123,0.3); border-radius: 10px;
+      position: relative; overflow: hidden;
+    }
+    .kpi-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 2px; background: linear-gradient(90deg, #00897B, #4FC3F7);
+    }
+    .kpi-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 700;
+      background: linear-gradient(135deg, #4FC3F7, #4DB6AC);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .kpi-label { font-family: 'Inter', sans-serif; font-size: 0.72rem; color: #78909C; text-transform: uppercase; letter-spacing: 0.12em; }
+
+    /* ── PFD Placeholder ────────────────────────────────────── */
+    .pfd-placeholder {
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(79,195,247,0.05) 39px, rgba(79,195,247,0.05) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(79,195,247,0.05) 39px, rgba(79,195,247,0.05) 40px),
+        #131E2A;
+      border: 1.5px dashed rgba(79,195,247,0.25);
+      border-radius: 10px;
+      min-height: 420px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 1rem;
+    }
+
+    /* ── Table ──────────────────────────────────────────────── */
+    .data-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+    .data-table thead tr { border-bottom: 1px solid rgba(79,195,247,0.25); }
+    .data-table th { padding: 0.75rem 1rem; text-align: left; font-family: 'Space Grotesk', sans-serif; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #4FC3F7; white-space: nowrap; }
+    .data-table td { padding: 0.7rem 1rem; color: #B0BEC5; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .data-table tbody tr:hover { background: rgba(79,195,247,0.04); }
+    .data-table .stream-id { color: #4DB6AC; font-weight: 500; }
+    .data-table .highlight { color: #E8F5E9; }
+
+    /* ── Equipment Cards ────────────────────────────────────── */
+    .equip-card {
+      background: #1A2E3B; border: 1px solid rgba(0,137,123,0.2);
+      border-radius: 12px; overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .equip-card:hover { transform: translateY(-3px); border-color: rgba(0,137,123,0.5); }
+    .equip-header {
+      background: linear-gradient(135deg, #243444 0%, #1A3040 100%);
+      border-bottom: 1px solid rgba(0,137,123,0.2);
+    }
+    .equip-icon {
+      width: 42px; height: 42px;
+      background: linear-gradient(135deg, rgba(0,137,123,0.2), rgba(79,195,247,0.15));
+      border: 1px solid rgba(0,137,123,0.35); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .spec-row { display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.45rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .spec-key { font-size: 0.72rem; color: #78909C; font-family: 'Inter', sans-serif; }
+    .spec-val { font-size: 0.72rem; color: #B0BEC5; font-family: 'JetBrains Mono', monospace; text-align: right; }
+    .spec-row:last-child { border-bottom: none; }
+    .badge-standard {
+      display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px;
+      font-size: 0.62rem; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.06em;
+      background: rgba(0,137,123,0.15); color: #4DB6AC; border: 1px solid rgba(0,137,123,0.3);
+      margin-right: 0.25rem; margin-top: 0.25rem;
+    }
+
+    /* ── Conclusion ─────────────────────────────────────────── */
+    .highlight-card {
+      background: linear-gradient(135deg, #1A2E3B 0%, #1A3040 100%);
+      border-left: 3px solid #00897B; border-radius: 0 10px 10px 0;
+      padding: 1.25rem 1.5rem;
+    }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    #footer {
+      background: #0A131A;
+      border-top: 1px solid rgba(79,195,247,0.08);
+    }
+    .footer-icon {
+      width: 44px; height: 44px;
+      border: 1.5px solid rgba(79,195,247,0.2); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #78909C; transition: color 0.2s, border-color 0.2s;
+      text-decoration: none;
+    }
+    .footer-icon:hover { color: #4FC3F7; border-color: rgba(79,195,247,0.5); }
+
+    /* ── Divider ─────────────────────────────────────────────── */
+    .section-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(79,195,247,0.12), transparent); }
+
+    /* ── Mobile menu ─────────────────────────────────────────── */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
+
+    /* ── Animations ──────────────────────────────────────────── */
+    @keyframes fade-up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-up { animation: fade-up 0.7s ease both; }
+    .delay-1 { animation-delay: 0.15s; }
+    .delay-2 { animation-delay: 0.3s; }
+    .delay-3 { animation-delay: 0.45s; }
+    .delay-4 { animation-delay: 0.6s; }
+
+    @media (max-width: 768px) {
+      #process-flow-bg { display: none; }
+    }
+  </style>
+</head>
+
+<body class="bg-navy text-mint antialiased">
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- NAV                                                   -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <nav id="navbar">
+    <div class="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
+
+      <!-- Wordmark -->
+      <a href="#hero" class="flex items-center gap-2.5 text-decoration-none">
+        <div class="w-8 h-8 rounded-md flex items-center justify-center" style="background:linear-gradient(135deg,#00897B,#4FC3F7);">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#0F1923" stroke-width="1.5"/><path d="M5 8h6M8 5v6" stroke="#0F1923" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <span class="font-display font-600 text-sm text-mint tracking-wide">Alex Chen</span>
+      </a>
+
+      <!-- Desktop links -->
+      <div class="hidden md:flex items-center gap-7">
+        <a href="#overview"    class="nav-link">01 Overview</a>
+        <a href="#pfd"         class="nav-link">02 PFD</a>
+        <a href="#simulation"  class="nav-link">03 Simulation</a>
+        <a href="#equipment"   class="nav-link">04 Equipment</a>
+        <a href="#conclusion"  class="nav-link">05 Conclusion</a>
+        <a href="#footer"      class="nav-link">Contact</a>
+      </div>
+
+      <!-- Mobile hamburger -->
+      <button onclick="document.getElementById('mobile-menu').classList.toggle('open')" class="md:hidden p-2 text-cool-gray" aria-label="Menu">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="md:hidden px-6 pb-4 flex flex-col gap-4 border-t border-white border-opacity-5">
+      <a href="#overview"   onclick="document.getElementById('mobile-menu').classList.remove('open')" class="nav-link">01 Overview</a>
+      <a href="#pfd"        onclick="document.getElementById('mobile-menu').classList.remove('open')" class="nav-link">02 PFD</a>
+      <a href="#simulation" onclick="document.getElementById('mobile-menu').classList.remove('open')" class="nav-link">03 Simulation</a>
+      <a href="#equipment"  onclick="document.getElementById('mobile-menu').classList.remove('open')" class="nav-link">04 Equipment</a>
+      <a href="#conclusion" onclick="document.getElementById('mobile-menu').classList.remove('open')" class="nav-link">05 Conclusion</a>
+      <a href="#footer"     onclick="document.getElementById('mobile-menu').classList.remove('open')" class="nav-link">Contact</a>
+    </div>
+  </nav>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- HERO                                                  -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="hero" class="flex items-center pt-16">
+    <div class="max-w-7xl mx-auto px-6 py-28 md:py-36 relative z-10 w-full">
+      <div class="max-w-2xl">
+        <p class="hero-eyebrow mb-5 fade-up">Process Engineer · Chemical Engineer · Melbourne, AU</p>
+
+        <h1 class="hero-name mb-4 fade-up delay-1">
+          Alex Chen
+        </h1>
+
+        <p class="hero-title mb-6 fade-up delay-2">
+          Hydrometallurgical Process Design &amp; Battery Recycling Simulation
+        </p>
+
+        <p class="text-cool-gray text-base leading-relaxed mb-10 max-w-xl fade-up delay-3" style="font-family:'Inter',sans-serif;">
+          I engineer closed-loop recovery systems that reclaim critical minerals — lithium, cobalt, and nickel — from end-of-life batteries with &gt;98% efficiency. Combining Aspen Plus process simulation with rigorous AutoCAD PFD design, I translate chemical thermodynamics into bankable, low-emission plant configurations ready for Australian industrial deployment.
+        </p>
+
+        <div class="flex flex-wrap gap-3 fade-up delay-4">
+          <a href="#overview"   class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            View Portfolio
+          </a>
+          <a href="#"           class="btn-outline" download>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v7M5 8l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Download PDF Resume
+          </a>
+        </div>
+
+        <!-- Mini stats row -->
+        <div class="flex flex-wrap gap-6 mt-14 fade-up delay-4">
+          <div>
+            <span class="block font-display text-2xl font-700 text-ocean">98%+</span>
+            <span class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">Li Recovery</span>
+          </div>
+          <div class="w-px bg-white opacity-10"></div>
+          <div>
+            <span class="block font-display text-2xl font-700 text-teal-light">99.5%</span>
+            <span class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">Product Purity</span>
+          </div>
+          <div class="w-px bg-white opacity-10"></div>
+          <div>
+            <span class="block font-display text-2xl font-700 text-ocean">−42%</span>
+            <span class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">CO₂ vs Pyrometallurgy</span>
+          </div>
+          <div class="w-px bg-white opacity-10"></div>
+          <div>
+            <span class="block font-display text-2xl font-700 text-teal-light">6-Stage</span>
+            <span class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">Process Design</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animated SVG background diagram -->
+    <svg id="process-flow-bg" viewBox="0 0 600 520" xmlns="http://www.w3.org/2000/svg">
+      <!-- Connecting paths -->
+      <path class="flow-path fp1" d="M60 100 Q140 100 140 200 Q140 300 220 300"/>
+      <path class="flow-path fp2" d="M220 300 Q300 300 300 200 Q300 140 380 140 Q440 140 440 220"/>
+      <path class="flow-path fp3" d="M440 220 Q440 340 360 380 Q280 420 200 420 Q140 420 100 360"/>
+
+      <!-- Nodes -->
+      <g class="flow-node fn1">
+        <rect x="20" y="68" width="80" height="44" rx="6" fill="rgba(0,137,123,0.25)" stroke="#00897B" stroke-width="1"/>
+        <text x="60" y="88" text-anchor="middle" fill="#4DB6AC" font-size="7" font-family="JetBrains Mono">LEACHING</text>
+        <text x="60" y="100" text-anchor="middle" fill="#4DB6AC" font-size="7" font-family="JetBrains Mono">REACTOR</text>
+      </g>
+      <g class="flow-node fn2">
+        <rect x="180" y="268" width="80" height="44" rx="6" fill="rgba(79,195,247,0.15)" stroke="#4FC3F7" stroke-width="1"/>
+        <text x="220" y="288" text-anchor="middle" fill="#4FC3F7" font-size="7" font-family="JetBrains Mono">SOLVENT</text>
+        <text x="220" y="300" text-anchor="middle" fill="#4FC3F7" font-size="7" font-family="JetBrains Mono">EXTRACTION</text>
+      </g>
+      <g class="flow-node fn3">
+        <rect x="400" y="188" width="80" height="44" rx="6" fill="rgba(0,137,123,0.25)" stroke="#00897B" stroke-width="1"/>
+        <text x="440" y="208" text-anchor="middle" fill="#4DB6AC" font-size="7" font-family="JetBrains Mono">STRIPPING</text>
+        <text x="440" y="220" text-anchor="middle" fill="#4DB6AC" font-size="7" font-family="JetBrains Mono">COLUMN</text>
+      </g>
+      <g class="flow-node fn4">
+        <rect x="60" y="330" width="80" height="44" rx="6" fill="rgba(79,195,247,0.15)" stroke="#4FC3F7" stroke-width="1"/>
+        <text x="100" y="350" text-anchor="middle" fill="#4FC3F7" font-size="7" font-family="JetBrains Mono">PRECIP.</text>
+        <text x="100" y="362" text-anchor="middle" fill="#4FC3F7" font-size="7" font-family="JetBrains Mono">CRYSTALLISER</text>
+      </g>
+
+      <!-- Labels -->
+      <text x="150" y="155" fill="#4DB6AC" font-size="8" font-family="JetBrains Mono" opacity="0.7">H₂SO₄ leachate</text>
+      <text x="305" y="195" fill="#4FC3F7" font-size="8" font-family="JetBrains Mono" opacity="0.7">Co/Ni raffinate</text>
+      <text x="265" y="415" fill="#4DB6AC" font-size="8" font-family="JetBrains Mono" opacity="0.7">Li₂CO₃ product stream</text>
+    </svg>
+  </section>
+
+  <div class="section-divider my-0"></div>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SECTION 1 · PROJECT OVERVIEW                         -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="overview" class="py-24 max-w-7xl mx-auto px-6">
+
+    <div class="mb-12">
+      <p class="section-label mb-3">Section 01</p>
+      <h2 class="section-title mb-4">Project Overview</h2>
+      <p class="text-cool-gray text-base leading-relaxed max-w-2xl">
+        A rigorous feasibility study and full-process simulation of a hydrometallurgical plant designed to recover lithium, cobalt, and nickel from end-of-life lithium-ion battery packs at industrial scale.
+      </p>
+    </div>
+
+    <!-- Two-column: Background + Objectives -->
+    <div class="grid md:grid-cols-2 gap-6 mb-10">
+      <div class="card p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(0,137,123,0.2);border:1px solid rgba(0,137,123,0.35);">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2C5.13 2 2 5.13 2 9s3.13 7 7 7 7-3.13 7-7-3.13-7-7-7zm0 3v4l2.5 2.5" stroke="#4DB6AC" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="font-display font-600 text-mint text-base">Background &amp; Context</h3>
+        </div>
+        <p class="text-cool-gray text-sm leading-relaxed">
+          Australia's battery storage capacity is projected to grow 15× by 2030, generating an estimated 135,000 tonnes of spent battery waste annually. Current landfill disposal leaches toxic heavy metals into groundwater and forfeits critical minerals worth AUD $4.2B per year. Hydrometallurgical processing offers a thermodynamically efficient, low-temperature alternative that recovers &gt;98% of valuable metals while meeting EPA waste discharge standards — directly supporting Australia's Critical Minerals Strategy 2030.
+        </p>
+      </div>
+
+      <div class="card p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(79,195,247,0.15);border:1px solid rgba(79,195,247,0.3);">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 9l3 3 7-7" stroke="#4FC3F7" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <h3 class="font-display font-600 text-mint text-base">Project Objectives</h3>
+        </div>
+        <ul class="space-y-3 text-sm text-cool-gray">
+          <li class="flex gap-2.5"><span class="text-teal mt-0.5">▸</span> Design a 6-stage hydrometallurgical flowsheet: pretreatment → leaching → purification → solvent extraction → stripping → precipitation</li>
+          <li class="flex gap-2.5"><span class="text-teal mt-0.5">▸</span> Develop a full Aspen Plus process simulation to validate mass and energy balances under realistic operating conditions</li>
+          <li class="flex gap-2.5"><span class="text-teal mt-0.5">▸</span> Produce AutoCAD PFD and P&amp;ID documentation to engineering-deliverable standard</li>
+          <li class="flex gap-2.5"><span class="text-teal mt-0.5">▸</span> Specify and size all major process equipment with material selection and HAZOP-ready design</li>
+          <li class="flex gap-2.5"><span class="text-teal mt-0.5">▸</span> Demonstrate CO₂ and energy intensity reductions vs pyrometallurgical baseline</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- KPI Dashboard -->
+    <div class="mb-3">
+      <p class="section-label mb-6">Key Performance Indicators</p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div class="kpi-card p-5 col-span-1">
+        <div class="kpi-value">98.3%</div>
+        <div class="kpi-label mt-1">Li Recovery Rate</div>
+      </div>
+      <div class="kpi-card p-5 col-span-1">
+        <div class="kpi-value">99.5%</div>
+        <div class="kpi-label mt-1">Product Purity</div>
+      </div>
+      <div class="kpi-card p-5 col-span-1">
+        <div class="kpi-value">97.1%</div>
+        <div class="kpi-label mt-1">Co Recovery</div>
+      </div>
+      <div class="kpi-card p-5 col-span-1">
+        <div class="kpi-value">96.8%</div>
+        <div class="kpi-label mt-1">Ni Recovery</div>
+      </div>
+      <div class="kpi-card p-5 col-span-1">
+        <div class="kpi-value" style="font-size:1.7rem;">−42%</div>
+        <div class="kpi-label mt-1">CO₂ vs Pyro</div>
+      </div>
+      <div class="kpi-card p-5 col-span-1">
+        <div class="kpi-value" style="font-size:1.7rem;">2.4 t/h</div>
+        <div class="kpi-label mt-1">Feed Throughput</div>
+      </div>
+    </div>
+
+    <!-- Significance -->
+    <div class="mt-10 card p-7">
+      <h3 class="font-display font-600 text-mint text-base mb-4">Project Significance</h3>
+      <div class="grid md:grid-cols-3 gap-6 text-sm text-cool-gray">
+        <div>
+          <div class="text-teal-light font-mono text-xs uppercase tracking-widest mb-2">Environmental</div>
+          Eliminates hazardous landfill leachate by fully mineralising heavy-metal bearing streams. Life-cycle analysis confirms a 42% reduction in greenhouse gas intensity compared to the pyrometallurgical baseline, supporting Scope 3 emission reporting for EV battery supply chains.
+        </div>
+        <div>
+          <div class="text-ocean font-mono text-xs uppercase tracking-widest mb-2">Economic</div>
+          At 2.4 t/h feed capacity, the recovered Li₂CO₃, CoSO₄, and NiSO₄ product streams generate an estimated AUD $18.7M/year in product revenue, with a projected simple payback period of 4.8 years at current commodity prices.
+        </div>
+        <div>
+          <div class="text-teal-light font-mono text-xs uppercase tracking-widest mb-2">Strategic</div>
+          Directly addresses Australia's National Battery Strategy by establishing domestic secondary-refining capability, reducing dependence on primary ore imports and securing a circular supply chain for grid-scale energy storage.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SECTION 2 · AUTOCAD PFD                             -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="pfd" class="py-24 max-w-7xl mx-auto px-6">
+
+    <div class="mb-12">
+      <p class="section-label mb-3">Section 02</p>
+      <h2 class="section-title mb-4">AutoCAD Process Flow Diagram</h2>
+      <p class="text-cool-gray text-sm leading-relaxed max-w-2xl">
+        Full PFD drafted to AS 1885 and ISO 10628 standards, covering all unit operations from battery dismantling through to final product packaging.
+      </p>
+    </div>
+
+    <!-- PFD Placeholder image -->
+    <div class="pfd-placeholder mb-8" id="pfd-image-container">
+      <!-- ⬇ REPLACE: swap this entire block with <img src="your-pfd.png" class="w-full h-full object-contain rounded-lg" alt="AutoCAD PFD"> -->
+      <svg width="64" height="64" viewBox="0 0 64 64" fill="none" opacity="0.5">
+        <rect x="4" y="4" width="56" height="56" rx="6" stroke="#4FC3F7" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <rect x="14" y="20" width="14" height="10" rx="2" stroke="#4DB6AC" stroke-width="1.2"/>
+        <rect x="36" y="20" width="14" height="10" rx="2" stroke="#4DB6AC" stroke-width="1.2"/>
+        <rect x="25" y="35" width="14" height="10" rx="2" stroke="#4FC3F7" stroke-width="1.2"/>
+        <line x1="28" y1="25" x2="36" y2="25" stroke="#4DB6AC" stroke-width="1" stroke-dasharray="2 1"/>
+        <line x1="32" y1="30" x2="32" y2="35" stroke="#4FC3F7" stroke-width="1"/>
+        <circle cx="32" cy="16" r="3" stroke="#4DB6AC" stroke-width="1"/>
+        <line x1="32" y1="19" x2="32" y2="20" stroke="#4DB6AC" stroke-width="1"/>
+      </svg>
+      <p class="font-mono text-xs text-cool-gray-dim tracking-widest uppercase">AutoCAD PFD — Drop Screenshot Here</p>
+      <p class="text-xs text-cool-gray-dim opacity-60 text-center max-w-xs">Replace the <code class="bg-slate-mid px-1 rounded text-teal-light">#pfd-image-container</code> contents with your <code class="bg-slate-mid px-1 rounded text-teal-light">&lt;img&gt;</code> tag</p>
+    </div>
+
+    <!-- Two-column: Design Considerations + Download -->
+    <div class="grid md:grid-cols-5 gap-6">
+      <div class="md:col-span-3 card p-7">
+        <h3 class="font-display font-600 text-mint text-base mb-5">Key Design Considerations</h3>
+        <div class="space-y-4 text-sm text-cool-gray">
+          <div class="flex gap-3">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-600 text-navy" style="background:linear-gradient(135deg,#00897B,#4FC3F7);">1</span>
+            <div><span class="text-mint font-500">Acid Stoichiometry Control</span> — H₂SO₄:battery mass ratio maintained at 1.5:1 mol/mol to maximise metal dissolution while minimising reagent waste and downstream neutralisation load.</div>
+          </div>
+          <div class="flex gap-3">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-600 text-navy" style="background:linear-gradient(135deg,#00897B,#4FC3F7);">2</span>
+            <div><span class="text-mint font-500">pH-Staged Precipitation</span> — Sequential pH adjustment (pH 3.5 → 5.5 → 10.5) selectively precipitates Fe/Al impurities before Co/Ni/Li separation, eliminating cross-contamination of product streams.</div>
+          </div>
+          <div class="flex gap-3">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-600 text-navy" style="background:linear-gradient(135deg,#00897B,#4FC3F7);">3</span>
+            <div><span class="text-mint font-500">Heat Integration</span> — Pinch analysis identified 3 process-to-process heat exchangers, reducing utility demand by 31% versus unintegrated design. Hot leachate effluent pre-heats incoming feed slurry.</div>
+          </div>
+          <div class="flex gap-3">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-600 text-navy" style="background:linear-gradient(135deg,#00897B,#4FC3F7);">4</span>
+            <div><span class="text-mint font-500">Closed-Loop Reagent Recycling</span> — Spent organic extractant (D2EHPA / Cyanex 272) from the stripping stage is regenerated and recirculated, reducing solvent makeup to &lt;2% of total inventory per cycle.</div>
+          </div>
+          <div class="flex gap-3">
+            <span class="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center font-mono text-xs font-600 text-navy" style="background:linear-gradient(135deg,#00897B,#4FC3F7);">5</span>
+            <div><span class="text-mint font-500">Effluent Treatment</span> — Acidic bleed streams are treated via lime neutralisation and constructed wetland polishing before discharge, meeting the Environment Protection (Water) Policy 2015.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="md:col-span-2 flex flex-col gap-5">
+        <!-- Drawing register -->
+        <div class="card p-6">
+          <h3 class="font-display font-600 text-mint text-sm mb-4">Drawing Register</h3>
+          <div class="space-y-2.5">
+            <div class="flex justify-between items-center py-2 border-b border-white border-opacity-5">
+              <span class="font-mono text-xs text-cool-gray">DWG-001</span>
+              <span class="text-xs text-mint">Site Layout &amp; Battery Intake</span>
+              <span class="font-mono text-xs text-teal px-2 py-0.5 rounded" style="background:rgba(0,137,123,0.12);">Rev C</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-white border-opacity-5">
+              <span class="font-mono text-xs text-cool-gray">DWG-002</span>
+              <span class="text-xs text-mint">Leaching PFD</span>
+              <span class="font-mono text-xs text-teal px-2 py-0.5 rounded" style="background:rgba(0,137,123,0.12);">Rev D</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-white border-opacity-5">
+              <span class="font-mono text-xs text-cool-gray">DWG-003</span>
+              <span class="text-xs text-mint">SX / Stripping PFD</span>
+              <span class="font-mono text-xs text-ocean px-2 py-0.5 rounded" style="background:rgba(79,195,247,0.1);">Rev B</span>
+            </div>
+            <div class="flex justify-between items-center py-2">
+              <span class="font-mono text-xs text-cool-gray">DWG-004</span>
+              <span class="text-xs text-mint">Precipitation &amp; Utilities</span>
+              <span class="font-mono text-xs text-ocean px-2 py-0.5 rounded" style="background:rgba(79,195,247,0.1);">Rev A</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Download button -->
+        <a href="#" download class="btn-primary justify-center py-4 text-sm">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v7M5 8l3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Download High-Res PFD (PDF)
+        </a>
+
+        <div class="card p-5">
+          <p class="font-mono text-xs text-cool-gray-dim uppercase tracking-widest mb-3">Drawing Standard</p>
+          <div class="space-y-2">
+            <div class="spec-row"><span class="spec-key">Standard</span><span class="spec-val text-teal-light">ISO 10628-2</span></div>
+            <div class="spec-row"><span class="spec-key">Symbol Set</span><span class="spec-val">AS 1885.1</span></div>
+            <div class="spec-row"><span class="spec-key">Scale</span><span class="spec-val">1:100 (A1)</span></div>
+            <div class="spec-row"><span class="spec-key">Software</span><span class="spec-val">AutoCAD 2024</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SECTION 3 · ASPEN PLUS SIMULATION                   -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="simulation" class="py-24 max-w-7xl mx-auto px-6">
+
+    <div class="mb-12">
+      <p class="section-label mb-3">Section 03</p>
+      <h2 class="section-title mb-4">Aspen Plus Mass &amp; Energy Balance</h2>
+      <p class="text-cool-gray text-sm leading-relaxed max-w-2xl">
+        Rigorous steady-state simulation using Aspen Plus V14 with the ELECNRTL thermodynamic property package, validated against published pilot-plant data (±3% deviation).
+      </p>
+    </div>
+
+    <!-- Technical note -->
+    <div class="highlight-card mb-8">
+      <div class="flex gap-3 items-start">
+        <svg class="flex-shrink-0 mt-0.5" width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#00897B" stroke-width="1.4"/><path d="M9 8v5M9 6v.5" stroke="#00897B" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <div>
+          <p class="font-display font-600 text-mint text-sm mb-2">Simulation Methodology</p>
+          <p class="text-cool-gray text-sm leading-relaxed">
+            The simulation employs the <span class="text-teal-light font-mono text-xs">ELECNRTL</span> electrolyte property method to accurately model ion activity in concentrated H₂SO₄/H₂O leach solutions. Acid leaching kinetics were implemented via a Langmuir–Hinshelwood rate expression fitted to experimental dissolution data at 60–80 °C. Convergence was achieved via Aspen's SM (Successive Modular) algorithm with a convergence tolerance of 10⁻⁵ on mole balance. Heat integration was subsequently optimised using Aspen Energy Analyzer, identifying 3 pinch matches saving 31% on utility load.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aspen simulation screenshot placeholder -->
+    <div class="pfd-placeholder mb-8" id="aspen-image-container" style="min-height:280px;">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" opacity="0.45">
+        <rect x="2" y="2" width="44" height="44" rx="5" stroke="#4DB6AC" stroke-width="1.2" stroke-dasharray="3 2"/>
+        <rect x="8" y="14" width="10" height="18" rx="2" stroke="#4DB6AC" stroke-width="1"/>
+        <rect x="22" y="10" width="10" height="26" rx="2" stroke="#4FC3F7" stroke-width="1"/>
+        <rect x="36" y="17" width="6" height="15" rx="2" stroke="#4DB6AC" stroke-width="1"/>
+      </svg>
+      <p class="font-mono text-xs text-cool-gray-dim tracking-widest uppercase">Aspen Plus Flowsheet Screenshot — Drop Here</p>
+      <p class="text-xs text-cool-gray-dim opacity-60">Replace <code class="bg-slate-mid px-1 rounded text-teal-light">#aspen-image-container</code> contents with your &lt;img&gt; tag</p>
+    </div>
+
+    <!-- Mass & Energy Balance Table -->
+    <div class="card overflow-x-auto">
+      <div class="p-5 pb-0">
+        <p class="font-display font-600 text-mint text-sm mb-1">Stream Mass &amp; Energy Balance — Aspen Plus Output</p>
+        <p class="font-mono text-xs text-cool-gray-dim mb-4">Basis: 2400 kg/h battery feed · Steady-state · T_ref = 25°C</p>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Stream No.</th>
+            <th>Stream Name</th>
+            <th>Phase</th>
+            <th>Key Component</th>
+            <th>Mass Flow (kg/h)</th>
+            <th>Mole Flow (kmol/h)</th>
+            <th>Temp (°C)</th>
+            <th>Pressure (kPa)</th>
+            <th>Enthalpy (MW)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="stream-id">S-101</td>
+            <td class="highlight">Battery Feed Slurry</td>
+            <td>Slurry</td>
+            <td>LiCoO₂, NMC</td>
+            <td class="highlight">2,400.0</td>
+            <td>—</td>
+            <td class="highlight">25</td>
+            <td>101.3</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td class="stream-id">S-102</td>
+            <td class="highlight">H₂SO₄ Feed</td>
+            <td>Liquid</td>
+            <td>H₂SO₄ (98%)</td>
+            <td class="highlight">840.0</td>
+            <td>8.57</td>
+            <td class="highlight">25</td>
+            <td>101.3</td>
+            <td>−0.42</td>
+          </tr>
+          <tr>
+            <td class="stream-id">S-103</td>
+            <td class="highlight">Leach Reactor Outlet</td>
+            <td>Liquid</td>
+            <td>Li⁺, Co²⁺, Ni²⁺</td>
+            <td class="highlight">3,185.0</td>
+            <td>175.2</td>
+            <td class="highlight">80</td>
+            <td>101.3</td>
+            <td>−1.14</td>
+          </tr>
+          <tr>
+            <td class="stream-id">S-201</td>
+            <td class="highlight">SX Feed (Aqueous)</td>
+            <td>Liquid</td>
+            <td>Co²⁺, Ni²⁺</td>
+            <td class="highlight">2,940.0</td>
+            <td>158.6</td>
+            <td class="highlight">40</td>
+            <td>101.3</td>
+            <td>−0.88</td>
+          </tr>
+          <tr>
+            <td class="stream-id">S-202</td>
+            <td class="highlight">D2EHPA Organic</td>
+            <td>Liquid</td>
+            <td>D2EHPA (20% v/v)</td>
+            <td class="highlight">1,560.0</td>
+            <td>21.4</td>
+            <td class="highlight">25</td>
+            <td>101.3</td>
+            <td>−0.31</td>
+          </tr>
+          <tr>
+            <td class="stream-id">S-203</td>
+            <td class="highlight">Co/Ni Loaded Organic</td>
+            <td>Liquid</td>
+            <td>Co-D2EHPA complex</td>
+            <td class="highlight">1,620.0</td>
+            <td>22.8</td>
+            <td class="highlight">32</td>
+            <td>101.3</td>
+            <td>−0.29</td>
+          </tr>
+          <tr>
+            <td class="stream-id">S-301</td>
+            <td class="highlight">Li Raffinate</td>
+            <td>Liquid</td>
+            <td>Li⁺ (3.2 g/L)</td>
+            <td class="highlight">2,880.0</td>
+            <td>414.6</td>
+            <td class="highlight">35</td>
+            <td>101.3</td>
+            <td>−0.76</td>
+          </tr>
+          <tr>
+            <td class="stream-id">S-302</td>
+            <td class="highlight">Stripping Aqueous</td>
+            <td>Liquid</td>
+            <td>CoSO₄, NiSO₄</td>
+            <td class="highlight">980.0</td>
+            <td>42.2</td>
+            <td class="highlight">45</td>
+            <td>101.3</td>
+            <td>−0.24</td>
+          </tr>
+          <tr>
+            <td class="stream-id">S-401</td>
+            <td class="highlight">Li₂CO₃ Product</td>
+            <td>Solid/Liquid</td>
+            <td>Li₂CO₃ (99.5%)</td>
+            <td class="highlight">218.4</td>
+            <td>2.95</td>
+            <td class="highlight">20</td>
+            <td>101.3</td>
+            <td>−0.06</td>
+          </tr>
+          <tr>
+            <td class="stream-id">S-402</td>
+            <td class="highlight">CoSO₄ Product Crystals</td>
+            <td>Solid</td>
+            <td>CoSO₄·7H₂O (99.2%)</td>
+            <td class="highlight">384.6</td>
+            <td>1.38</td>
+            <td class="highlight">20</td>
+            <td>101.3</td>
+            <td>−0.11</td>
+          </tr>
+          <tr>
+            <td class="stream-id">S-403</td>
+            <td class="highlight">NiSO₄ Product Crystals</td>
+            <td>Solid</td>
+            <td>NiSO₄·6H₂O (99.1%)</td>
+            <td class="highlight">296.2</td>
+            <td>1.12</td>
+            <td class="highlight">20</td>
+            <td>101.3</td>
+            <td>−0.08</td>
+          </tr>
+          <tr style="border-top:1px solid rgba(79,195,247,0.2);">
+            <td class="stream-id">U-STEAM</td>
+            <td class="highlight">Low-Pressure Steam</td>
+            <td>Vapour</td>
+            <td>H₂O</td>
+            <td class="highlight">640.0</td>
+            <td>35.5</td>
+            <td class="highlight">135</td>
+            <td>313.0</td>
+            <td>+0.48</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="p-5 pt-3 flex flex-wrap gap-4 text-xs text-cool-gray-dim font-mono border-t border-white border-opacity-5">
+        <span>† H₂ reductant stream omitted for brevity</span>
+        <span>·</span>
+        <span>Electrolyte basis: molality</span>
+        <span>·</span>
+        <span>Property method: ELECNRTL</span>
+        <span>·</span>
+        <span>Aspen Plus V14.0</span>
+      </div>
+    </div>
+
+    <!-- Energy summary cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+      <div class="card p-5 text-center">
+        <div class="font-display font-700 text-ocean text-xl mb-1">3.82 GJ/t</div>
+        <div class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">Total Energy Intensity</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div class="font-display font-700 text-teal-light text-xl mb-1">−31%</div>
+        <div class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">Utility Savings (HI)</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div class="font-display font-700 text-ocean text-xl mb-1">135°C / 3 bar</div>
+        <div class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">LP Steam Conditions</div>
+      </div>
+      <div class="card p-5 text-center">
+        <div class="font-display font-700 text-teal-light text-xl mb-1">±0.6%</div>
+        <div class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">Mass Balance Closure</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SECTION 4 · EQUIPMENT SELECTION                     -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="equipment" class="py-24 max-w-7xl mx-auto px-6">
+
+    <div class="mb-12">
+      <p class="section-label mb-3">Section 04</p>
+      <h2 class="section-title mb-4">Equipment Selection &amp; Design Specifications</h2>
+      <p class="text-cool-gray text-sm leading-relaxed max-w-2xl">
+        All major process units sized and specified using first-principles design methodology with reference to AS 1210, AS 4041, and relevant ASME standards.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      <!-- Card 1: Leaching Reactor -->
+      <div class="equip-card">
+        <div class="equip-header p-5 flex items-start gap-4">
+          <div class="equip-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="5" y="3" width="10" height="14" rx="2" stroke="#4DB6AC" stroke-width="1.3"/><path d="M8 7h4M8 10h4M8 13h2" stroke="#4DB6AC" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <p class="font-display font-700 text-mint text-sm">Leaching Reactor</p>
+            <p class="font-mono text-xs text-cool-gray-dim">R-101 · Mechanically Agitated Tank</p>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="space-y-0.5 mb-4">
+            <div class="spec-row"><span class="spec-key">Operating Temp.</span><span class="spec-val">60–80 °C</span></div>
+            <div class="spec-row"><span class="spec-key">Operating Press.</span><span class="spec-val">Atmospheric</span></div>
+            <div class="spec-row"><span class="spec-key">Volume</span><span class="spec-val">12.5 m³ (net)</span></div>
+            <div class="spec-row"><span class="spec-key">Residence Time</span><span class="spec-val">4.0 h</span></div>
+            <div class="spec-row"><span class="spec-key">Agitator Power</span><span class="spec-val">18.5 kW</span></div>
+            <div class="spec-row"><span class="spec-key">MoC — Shell</span><span class="spec-val">316L SS</span></div>
+            <div class="spec-row"><span class="spec-key">MoC — Jacket</span><span class="spec-val">CS + PP Lining</span></div>
+          </div>
+          <div>
+            <p class="spec-key mb-1.5">Design Standards</p>
+            <span class="badge-standard">AS 1210</span>
+            <span class="badge-standard">ASME Sec. VIII</span>
+            <span class="badge-standard">AS 4343</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Solvent Extraction Column -->
+      <div class="equip-card">
+        <div class="equip-header p-5 flex items-start gap-4">
+          <div class="equip-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="6" y="2" width="8" height="16" rx="3" stroke="#4FC3F7" stroke-width="1.3"/><path d="M6 8h8M6 12h8" stroke="#4FC3F7" stroke-width="1" stroke-dasharray="1.5 1"/></svg>
+          </div>
+          <div>
+            <p class="font-display font-700 text-mint text-sm">Solvent Extraction Column</p>
+            <p class="font-mono text-xs text-cool-gray-dim">E-201 · Mixer-Settler Battery (5-stage)</p>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="space-y-0.5 mb-4">
+            <div class="spec-row"><span class="spec-key">Stages</span><span class="spec-val">5 × Mixer-Settler</span></div>
+            <div class="spec-row"><span class="spec-key">O:A Ratio</span><span class="spec-val">1.2 : 1</span></div>
+            <div class="spec-row"><span class="spec-key">Mixer Volume</span><span class="spec-val">0.8 m³ each</span></div>
+            <div class="spec-row"><span class="spec-key">Settler Area</span><span class="spec-val">2.4 m² each</span></div>
+            <div class="spec-row"><span class="spec-key">Extractant</span><span class="spec-val">20% D2EHPA / Kerosene</span></div>
+            <div class="spec-row"><span class="spec-key">MoC</span><span class="spec-val">FRP / HDPE Internals</span></div>
+            <div class="spec-row"><span class="spec-key">Temp. Control</span><span class="spec-val">25–35 °C</span></div>
+          </div>
+          <div>
+            <p class="spec-key mb-1.5">Design Standards</p>
+            <span class="badge-standard">ISO 15547</span>
+            <span class="badge-standard">AS/NZS 4020</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Precipitation Reactor -->
+      <div class="equip-card">
+        <div class="equip-header p-5 flex items-start gap-4">
+          <div class="equip-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="#4DB6AC" stroke-width="1.3"/><path d="M10 7v3l2 2" stroke="#4DB6AC" stroke-width="1.3" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <p class="font-display font-700 text-mint text-sm">Precipitation Reactor</p>
+            <p class="font-mono text-xs text-cool-gray-dim">R-301 · CSTR with pH Control</p>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="space-y-0.5 mb-4">
+            <div class="spec-row"><span class="spec-key">pH Setpoint</span><span class="spec-val">10.5 ± 0.1</span></div>
+            <div class="spec-row"><span class="spec-key">Reagent</span><span class="spec-val">Na₂CO₃ (20 wt%)</span></div>
+            <div class="spec-row"><span class="spec-key">Volume</span><span class="spec-val">4.2 m³</span></div>
+            <div class="spec-row"><span class="spec-key">Residence Time</span><span class="spec-val">2.5 h</span></div>
+            <div class="spec-row"><span class="spec-key">Temp.</span><span class="spec-val">85 °C</span></div>
+            <div class="spec-row"><span class="spec-key">MoC</span><span class="spec-val">316L SS / PTFE Seal</span></div>
+            <div class="spec-row"><span class="spec-key">Instrument</span><span class="spec-val">Mettler-Toledo pH</span></div>
+          </div>
+          <div>
+            <p class="spec-key mb-1.5">Design Standards</p>
+            <span class="badge-standard">AS 1210</span>
+            <span class="badge-standard">IEC 61511</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Centrifuge / Filter -->
+      <div class="equip-card">
+        <div class="equip-header p-5 flex items-start gap-4">
+          <div class="equip-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6" stroke="#4FC3F7" stroke-width="1.3"/><circle cx="10" cy="10" r="2.5" stroke="#4FC3F7" stroke-width="1"/><path d="M10 4V2M10 18v-2M4 10H2M18 10h-2" stroke="#4FC3F7" stroke-width="1" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <p class="font-display font-700 text-mint text-sm">Decanter Centrifuge</p>
+            <p class="font-mono text-xs text-cool-gray-dim">CF-401 · Solid-Liquid Separation</p>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="space-y-0.5 mb-4">
+            <div class="spec-row"><span class="spec-key">Throughput</span><span class="spec-val">5.2 m³/h</span></div>
+            <div class="spec-row"><span class="spec-key">Bowl Speed</span><span class="spec-val">3,200 rpm (G = 1,800)</span></div>
+            <div class="spec-row"><span class="spec-key">Separation</span><span class="spec-val">D₅₀ = 2 μm</span></div>
+            <div class="spec-row"><span class="spec-key">Cake Moisture</span><span class="spec-val">&lt; 12 wt%</span></div>
+            <div class="spec-row"><span class="spec-key">Drive Power</span><span class="spec-val">22 kW</span></div>
+            <div class="spec-row"><span class="spec-key">MoC — Bowl</span><span class="spec-val">Duplex 2205 SS</span></div>
+            <div class="spec-row"><span class="spec-key">Supplier Ref.</span><span class="spec-val">Alfa Laval ALDEC</span></div>
+          </div>
+          <div>
+            <p class="spec-key mb-1.5">Design Standards</p>
+            <span class="badge-standard">ISO 12669</span>
+            <span class="badge-standard">AS 61241</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 5: Heat Exchanger -->
+      <div class="equip-card">
+        <div class="equip-header p-5 flex items-start gap-4">
+          <div class="equip-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="7" width="14" height="6" rx="1.5" stroke="#4DB6AC" stroke-width="1.3"/><path d="M7 7V5M13 7V5M7 13v2M13 13v2" stroke="#4DB6AC" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <p class="font-display font-700 text-mint text-sm">Shell &amp; Tube Heat Exchanger</p>
+            <p class="font-mono text-xs text-cool-gray-dim">HX-101 · Feed / Leachate Recuperator</p>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="space-y-0.5 mb-4">
+            <div class="spec-row"><span class="spec-key">Duty</span><span class="spec-val">480 kW</span></div>
+            <div class="spec-row"><span class="spec-key">LMTD</span><span class="spec-val">22.4 °C</span></div>
+            <div class="spec-row"><span class="spec-key">U (Overall)</span><span class="spec-val">420 W/m²·K</span></div>
+            <div class="spec-row"><span class="spec-key">Area</span><span class="spec-val">51.6 m²</span></div>
+            <div class="spec-row"><span class="spec-key">Shell Design P</span><span class="spec-val">6 bar @ 100 °C</span></div>
+            <div class="spec-row"><span class="spec-key">MoC — Tubes</span><span class="spec-val">316L SS</span></div>
+            <div class="spec-row"><span class="spec-key">MoC — Shell</span><span class="spec-val">CS / Rubber Lined</span></div>
+          </div>
+          <div>
+            <p class="spec-key mb-1.5">Design Standards</p>
+            <span class="badge-standard">TEMA C</span>
+            <span class="badge-standard">AS 1210</span>
+            <span class="badge-standard">AS 4041</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 6: Crystalliser -->
+      <div class="equip-card">
+        <div class="equip-header p-5 flex items-start gap-4">
+          <div class="equip-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><polygon points="10,3 17,7 17,13 10,17 3,13 3,7" stroke="#4FC3F7" stroke-width="1.3" fill="none"/><circle cx="10" cy="10" r="2" fill="#4FC3F7" opacity="0.4"/></svg>
+          </div>
+          <div>
+            <p class="font-display font-700 text-mint text-sm">Evaporative Crystalliser</p>
+            <p class="font-mono text-xs text-cool-gray-dim">CR-501 · Li₂CO₃ Final Product</p>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="space-y-0.5 mb-4">
+            <div class="spec-row"><span class="spec-key">Type</span><span class="spec-val">DTB Crystalliser</span></div>
+            <div class="spec-row"><span class="spec-key">Evaporation Rate</span><span class="spec-val">380 kg H₂O/h</span></div>
+            <div class="spec-row"><span class="spec-key">Yield</span><span class="spec-val">218.4 kg Li₂CO₃/h</span></div>
+            <div class="spec-row"><span class="spec-key">Crystal D₅₀</span><span class="spec-val">85 μm (target)</span></div>
+            <div class="spec-row"><span class="spec-key">Vacuum</span><span class="spec-val">15 kPa abs.</span></div>
+            <div class="spec-row"><span class="spec-key">MoC</span><span class="spec-val">316L SS / Hastelloy</span></div>
+            <div class="spec-row"><span class="spec-key">Steam Utility</span><span class="spec-val">LP Steam 135 °C</span></div>
+          </div>
+          <div>
+            <p class="spec-key mb-1.5">Design Standards</p>
+            <span class="badge-standard">AS 1210</span>
+            <span class="badge-standard">GMP TRS 961</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- SECTION 5 · CONCLUSION                              -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="conclusion" class="py-24 max-w-7xl mx-auto px-6">
+
+    <div class="mb-12">
+      <p class="section-label mb-3">Section 05</p>
+      <h2 class="section-title mb-4">Conclusion &amp; Technical Highlights</h2>
+      <p class="text-cool-gray text-sm leading-relaxed max-w-2xl">
+        This project demonstrates end-to-end process engineering capability — from thermodynamic modelling and simulation to production-ready equipment specification.
+      </p>
+    </div>
+
+    <!-- Summary statement -->
+    <div class="card p-8 mb-8" style="background:linear-gradient(135deg,rgba(0,137,123,0.12) 0%,rgba(79,195,247,0.07) 100%);border-color:rgba(0,137,123,0.25);">
+      <p class="font-display font-600 text-mint text-lg leading-relaxed">
+        "A fully validated, simulation-backed hydrometallurgical flowsheet that recovers lithium, cobalt, and nickel from end-of-life batteries at &gt;97% efficiency — at 42% lower carbon intensity than conventional smelting, with a projected payback period under 5 years at 2.4 t/h feed scale."
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6 mb-8">
+
+      <div>
+        <h3 class="font-display font-600 text-mint text-base mb-4">Innovation &amp; Technical Breakthroughs</h3>
+        <div class="space-y-3">
+          <div class="highlight-card">
+            <p class="font-500 text-mint text-sm mb-1">Selective Leaching at Ambient Pressure</p>
+            <p class="text-cool-gray text-xs leading-relaxed">Achieved 98.3% Li extraction at atmospheric pressure using H₂SO₄ + H₂O₂ reductant at 70 °C — eliminating autoclave requirements and cutting CapEx by ~22% vs. pressure leach alternatives.</p>
+          </div>
+          <div class="highlight-card" style="border-left-color:#4FC3F7;">
+            <p class="font-500 text-mint text-sm mb-1">Multi-Component SX Cascade</p>
+            <p class="text-cool-gray text-xs leading-relaxed">Sequenced D2EHPA / Cyanex 272 extraction achieving simultaneous Co/Ni/Mn separation in a single 5-stage battery with &gt;99% selectivity — a design validated against published McCabe-Thiele stagewise calculations.</p>
+          </div>
+          <div class="highlight-card">
+            <p class="font-500 text-mint text-sm mb-1">Heat Pinch Integration</p>
+            <p class="text-cool-gray text-xs leading-relaxed">Aspen Energy Analyzer pinch study identified ΔT_min = 10 °C minimum approach, enabling 3 cross-heat exchangers that eliminate one LP steam generation unit and reduce cooling tower duty by 28%.</p>
+          </div>
+          <div class="highlight-card" style="border-left-color:#4FC3F7;">
+            <p class="font-500 text-mint text-sm mb-1">Closed-Loop Reagent Circuit</p>
+            <p class="text-cool-gray text-xs leading-relaxed">Organic solvent regeneration cycle reduces D2EHPA makeup to &lt;2% per pass, cutting annual operating costs by ~AUD $340K/year at design throughput.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-display font-600 text-mint text-base mb-4">Energy &amp; Sustainability Performance</h3>
+        <div class="space-y-3 mb-6">
+          <div class="card p-4 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">Total Energy Intensity</p>
+              <p class="font-display font-600 text-mint text-base mt-0.5">3.82 GJ / tonne product</p>
+            </div>
+            <div class="font-display font-700 text-ocean text-2xl">↓42%</div>
+          </div>
+          <div class="card p-4 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">CO₂ Intensity</p>
+              <p class="font-display font-600 text-mint text-base mt-0.5">1.12 tCO₂e / tonne Li₂CO₃</p>
+            </div>
+            <div class="font-display font-700 text-teal-light text-2xl">−58%</div>
+          </div>
+          <div class="card p-4 flex items-center justify-between">
+            <div>
+              <p class="text-xs text-cool-gray-dim font-mono uppercase tracking-widest">Water Consumption</p>
+              <p class="font-display font-600 text-mint text-base mt-0.5">4.8 m³ / tonne feed</p>
+            </div>
+            <div class="font-display font-700 text-ocean text-2xl">−31%</div>
+          </div>
+        </div>
+
+        <h3 class="font-display font-600 text-mint text-base mb-4">Engineering Skills Demonstrated</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="badge-standard">Aspen Plus V14</span>
+          <span class="badge-standard">AutoCAD 2024</span>
+          <span class="badge-standard">Pinch Analysis</span>
+          <span class="badge-standard">HAZOP</span>
+          <span class="badge-standard">Equipment Sizing</span>
+          <span class="badge-standard">ELECNRTL</span>
+          <span class="badge-standard">SX Design</span>
+          <span class="badge-standard">Mass Balance</span>
+          <span class="badge-standard">Energy Integration</span>
+          <span class="badge-standard">AS 1210</span>
+          <span class="badge-standard">ISO 10628</span>
+          <span class="badge-standard">LCA</span>
+          <span class="badge-standard">CAPEX / OPEX</span>
+          <span class="badge-standard">P&ID</span>
+          <span class="badge-standard">Circular Economy</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="card p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6" style="border-color:rgba(0,137,123,0.25);">
+      <div>
+        <p class="font-display font-700 text-mint text-lg mb-1">Ready to discuss this work?</p>
+        <p class="text-cool-gray text-sm">I'm actively seeking Process Engineer / Chemical Engineer roles in Australia. Let's connect.</p>
+      </div>
+      <div class="flex flex-wrap gap-3 flex-shrink-0">
+        <a href="mailto:alex.chen@email.com" class="btn-primary">Get in Touch</a>
+        <a href="#" download class="btn-outline">Full PDF Report</a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- FOOTER                                               -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <footer id="footer">
+    <div class="max-w-7xl mx-auto px-6 py-16">
+      <div class="grid md:grid-cols-3 gap-10 mb-12">
+
+        <!-- Brand -->
+        <div>
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-8 h-8 rounded-md flex items-center justify-center" style="background:linear-gradient(135deg,#00897B,#4FC3F7);">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#0F1923" stroke-width="1.5"/><path d="M5 8h6M8 5v6" stroke="#0F1923" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <span class="font-display font-600 text-mint text-sm">Alex Chen</span>
+          </div>
+          <p class="text-cool-gray text-xs leading-relaxed mb-4">
+            Process Engineer | Chemical Engineer<br/>
+            Specialising in Battery Recycling, Hydrometallurgy &amp; Process Simulation<br/>
+            Based in Melbourne, Australia · Open to relocation nationally
+          </p>
+          <p class="font-mono text-xs text-cool-gray-dim">Hydrometallurgical Recycling Process<br/>Simulation for Waste Batteries</p>
+        </div>
+
+        <!-- Navigation -->
+        <div>
+          <p class="font-mono text-xs text-cool-gray-dim uppercase tracking-widest mb-5">Portfolio Sections</p>
+          <nav class="flex flex-col gap-2.5">
+            <a href="#overview"   class="nav-link normal-case text-xs tracking-normal">01 — Project Overview</a>
+            <a href="#pfd"        class="nav-link normal-case text-xs tracking-normal">02 — AutoCAD PFD</a>
+            <a href="#simulation" class="nav-link normal-case text-xs tracking-normal">03 — Aspen Plus Simulation</a>
+            <a href="#equipment"  class="nav-link normal-case text-xs tracking-normal">04 — Equipment Design</a>
+            <a href="#conclusion" class="nav-link normal-case text-xs tracking-normal">05 — Conclusion</a>
+          </nav>
+        </div>
+
+        <!-- Contact -->
+        <div>
+          <p class="font-mono text-xs text-cool-gray-dim uppercase tracking-widest mb-5">Get In Touch</p>
+          <div class="space-y-3 mb-6">
+            <a href="mailto:alex.chen@email.com" class="flex items-center gap-3 text-cool-gray text-sm hover:text-ocean transition-colors">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 6l6 4 6-4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              alex.chen@email.com
+            </a>
+            <a href="tel:+61400000000" class="flex items-center gap-3 text-cool-gray text-sm hover:text-teal-light transition-colors">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 3h3l1 3.5L5.5 8C6.5 10 8 11.5 10 12.5l1.5-1.5L15 12v3a1 1 0 01-1 1C6.27 15.5.5 9.73.5 2A1 1 0 011.5 1H4L3 3z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              +61 400 000 000
+            </a>
+          </div>
+
+          <p class="font-mono text-xs text-cool-gray-dim uppercase tracking-widest mb-3">Social &amp; Profiles</p>
+          <div class="flex gap-3">
+            <!-- LinkedIn -->
+            <a href="https://linkedin.com/in/alex-chen" target="_blank" rel="noopener" class="footer-icon" title="LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><path d="M4.5 6H2v10h2.5V6zm-1.25-4a1.25 1.25 0 100 2.5A1.25 1.25 0 003.25 2zM16 10.5c0-2.5-1.2-4.5-3.5-4.5-1.1 0-2 .6-2.5 1.4V6H7.5v10H10v-5.5c0-1.1.6-2 1.75-2C12.9 8.5 13.5 9.4 13.5 10.5V16H16v-5.5z"/></svg>
+            </a>
+            <!-- GitHub -->
+            <a href="https://github.com/alex-chen" target="_blank" rel="noopener" class="footer-icon" title="GitHub">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><path fill-rule="evenodd" d="M9 1C4.58 1 1 4.58 1 9c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0017 9c0-4.42-3.58-8-8-8z" clip-rule="evenodd"/></svg>
+            </a>
+            <!-- Email -->
+            <a href="mailto:alex.chen@email.com" class="footer-icon" title="Email">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M2 7l7 5 7-5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </a>
+            <!-- Download Resume -->
+            <a href="#" download class="footer-icon" title="Download PDF Resume">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 3v9M6 9l3 3 3-3M4 15h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-white border-opacity-5 pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <p class="font-mono text-xs text-cool-gray-dim">
+          © 2025 Alex Chen · All simulation data and process designs are original engineering work.
+        </p>
+        <p class="font-mono text-xs text-cool-gray-dim">
+          Built with HTML5 · Tailwind CSS · Space Grotesk · Inter
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── Smooth active nav highlight on scroll ── -->
+  <script>
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(l => l.classList.remove('text-ocean'));
+          const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+          if (active) active.classList.add('text-ocean');
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    sections.forEach(s => observer.observe(s));
+  </script>
+
+</body>
+</html>
